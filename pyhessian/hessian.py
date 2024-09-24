@@ -23,7 +23,8 @@ import math
 from torch.autograd import Variable
 import numpy as np
 
-from pyhessian.utils import group_product, group_add, normalization, get_params_grad, hessian_vector_product, orthnormal
+from pyhessian.utils import *
+from tqdm import tqdm
 
 
 class hessian():
@@ -266,3 +267,65 @@ class hessian():
             weight_list_full.append(list(weight_list.cpu().numpy()))
 
         return eigen_list_full, weight_list_full
+    
+    ### My methods ###
+    def slow_lanczos_spectrum(self, iter):
+        """
+        compute the eigenvalues using slow lanczos algorithm
+        iter: number of iterations (should be set to number of parameters for full spectrum)
+        """
+        device = self.device
+        # generate random vector
+        v = generate_random_vector(self.params)
+        v = normalization(v)
+        # standard lanczos algorithm initlization
+        v_list = [v]
+        w_list = []
+        alpha_list = []
+        beta_list = []
+        ############### Lanczos
+        for i in tqdm(range(iter)):
+            self.model.zero_grad()
+            w_prime = [torch.zeros(p.size()).to(device) for p in self.params]
+            if i == 0:
+                if self.full_dataset:
+                    _, w_prime = self.dataloader_hv_product(v)
+                else:
+                    w_prime = hessian_vector_product(
+                        self.gradsH, self.params, v)
+                alpha = group_product(w_prime, v)
+                alpha_list.append(alpha.cpu().item())
+                w = group_add(w_prime, v, alpha=-alpha)
+                w_list.append(w)
+            else:
+                beta = torch.sqrt(group_product(w, w))
+                beta_list.append(beta.cpu().item())
+                if beta_list[-1] != 0.:
+                    # We should re-orth it
+                    v = orthnormal(w, v_list)
+                    v_list.append(v)
+                else:
+                    # generate a new vector
+                    w = [torch.randn(p.size()).to(device) for p in self.params]
+                    v = orthnormal(w, v_list)
+                    v_list.append(v)
+                if self.full_dataset:
+                    _, w_prime = self.dataloader_hv_product(v)
+                else:
+                    w_prime = hessian_vector_product(
+                        self.gradsH, self.params, v)
+                alpha = group_product(w_prime, v)
+                alpha_list.append(alpha.cpu().item())
+                w_tmp = group_add(w_prime, v, alpha=-alpha)
+                w = group_add(w_tmp, v_list[-2], alpha=-beta)
+
+        T = torch.zeros(iter, iter).to(device)
+        for i in range(len(alpha_list)):
+            T[i, i] = alpha_list[i]
+            if i < len(alpha_list) - 1:
+                T[i + 1, i] = beta_list[i]
+                T[i, i + 1] = beta_list[i]
+        eigenvalues, eigenvectors = torch.linalg.eig(T)
+
+        eigen_list = eigenvalues.real
+        return list(eigen_list.cpu().numpy())

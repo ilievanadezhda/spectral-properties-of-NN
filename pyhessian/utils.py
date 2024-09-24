@@ -98,6 +98,21 @@ def orthnormal(w, v_list):
     return normalization(w)
 
 
+### My functions ###
+def generate_random_vector(params):
+    """
+    generate a random vector with the same shape as the parameters
+    """
+    return [torch.randn_like(p) for p in params]
+
+
+def generate_random_rademacher_vector(params):
+    """
+    generate a random Rademacher vector with the same shape as the parameters
+    """
+    return [torch.randint(0, 2, p.size(), device=p.device, dtype=p.dtype)*2-1 for p in params]
+
+
 def get_hessian_hvp(model):
     """ 
     compute hessian using hessian-vector products
