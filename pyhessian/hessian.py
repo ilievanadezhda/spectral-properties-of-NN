@@ -276,7 +276,7 @@ class hessian():
         """
         device = self.device
         # generate random vector
-        v = generate_random_vector(self.params)
+        v = generate_random_rademacher_vector(self.params) # v = generate_random_vector(self.params)
         v = normalization(v)
         # standard lanczos algorithm initlization
         v_list = [v]
