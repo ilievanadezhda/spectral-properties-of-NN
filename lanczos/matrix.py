@@ -39,20 +39,22 @@ class matrix():
         """
         return torch.matmul(self.compute_self(), h)
     
-    def slow_lanczos(self, iter):
+    def slow_lanczos(self, iter, seed=0):
         """
         compute the eigenvalues using slow lanczos algorithm
         iter: number of iterations (should be set to number of parameters for full spectrum)
         """
         device = self.device
         # generate random vector
-        v = normalization(torch.randn(self.size, device=device))
+        if seed != 0:
+            torch.manual_seed(seed)
+        v = normalization(torch.randn(self.size, device=self.device))
         # standard lanczos algorithm initlization
         v_list = [v]
         w_list = []
         alpha_list = []
         beta_list = []
-        for i in tqdm(range(iter)):
+        for i in range(iter):
             w_prime = torch.zeros(self.size, device=device)
             if i == 0:
                 w_prime = self.matvec(v)
@@ -69,6 +71,7 @@ class matrix():
                     v_list.append(v)
                 else:
                     # generate a new vector
+                    print("beta is zero, generate a new vector, i = ", i)
                     w = [torch.randn(p.size()).to(device) for p in self.params]
                     v = orthnormal(w, v_list)
                     v_list.append(v)
@@ -90,11 +93,13 @@ class matrix():
 
         return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
     
-    def slow_lanczos_alt(self, iter):
+    def slow_lanczos_papyan(self, iter, seed=0):
         alpha_list = []
         beta_list = []
-        for i in tqdm(range(iter)):
+        for i in range(iter):
             if i == 0:
+                if seed != 0:
+                    torch.manual_seed(seed)
                 v_1 = normalization(torch.randn(self.size, device=self.device))
                 v_list = [v_1]
                 w = self.matvec(v_1)
@@ -121,11 +126,13 @@ class matrix():
         weight_list = torch.pow(eigenvectors[0, :], 2)
         return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())    
 
-    def fast_lanczos(self, iter):
+    def fast_lanczos(self, iter, seed=0):
         alpha_list = []
         beta_list = []
-        for i in tqdm(range(iter)):
+        for i in range(iter):
             if i == 0:
+                if seed != 0:
+                    torch.manual_seed(seed)
                 v = normalization(torch.randn(self.size, device=self.device))
                 v_next = self.matvec(v)
             else:
@@ -162,7 +169,6 @@ class matrix():
                 eigen_list, weight_list = self.fast_lanczos(iter)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
-            pass
         else:
             raise ValueError('Lanczos method should be either slow or fast!')
         return eigen_list_full, weight_list_full
