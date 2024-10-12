@@ -5,7 +5,9 @@ def normalization(v):
     """
     normalize a vector
     """
-    v = v / (torch.norm(v) + 1e-6)
+    norm = torch.sqrt(torch.dot(v, v))
+    norm = norm.cpu().item()
+    v = v / (norm + 1e-6)
     return v
 
 
