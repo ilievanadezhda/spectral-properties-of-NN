@@ -136,45 +136,46 @@ class matrix:
         return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
         
     def slow_lanczos_demmel(self, iter, seed=0):
-            """
-            compute the eigenvalues using slow lanczos algorithm (Demmel implementation; double full reorthogonalization)
-            """
-            # generate random vector
-            if seed != 0:
-                torch.manual_seed(seed)
-            v = normalization(torch.randn(self.size, device=self.device))
-            v_list = [torch.zeros(self.size), v]
-            # empty lists for storing alpha and beta values
-            alpha_list = []
-            beta_list = [0]
-            for i in range(iter):
-                w = self.matvec(v_list[-1])
-                alpha = torch.dot(v_list[-1], w)
-                # reorthogonalization
-                for v in v_list:
-                    w = w - torch.dot(w, v) * v
-                # double reorthogonalization
-                for v in v_list:
-                    w = w - torch.dot(w, v) * v
-                beta = torch.sqrt(torch.dot(w, w))
-                if beta == 0:
-                    raise ValueError("beta is zero!")
-                v = w / beta
-                v_list.append(v)
-                alpha_list.append(alpha.cpu().item())
-                beta_list.append(beta.cpu().item())
-            # remove the first element of beta_list
-            beta_list = beta_list[1:]
-            T = torch.zeros(iter, iter).to(self.device)
-            for i in range(len(alpha_list)):
-                T[i, i] = alpha_list[i]
-                if i < len(alpha_list) - 1:
-                    T[i + 1, i] = beta_list[i]
-                    T[i, i + 1] = beta_list[i]
-            eigenvalues, eigenvectors = torch.linalg.eig(T)
-            eigen_list = eigenvalues.real
-            weight_list = torch.pow(eigenvectors[0, :], 2)
-            return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
+        """
+        compute the eigenvalues using slow lanczos algorithm (Demmel implementation; double full reorthogonalization)
+        iter: number of iterations (should be set to number of parameters for full spectrum)
+        """
+        # generate random vector
+        if seed != 0:
+            torch.manual_seed(seed)
+        v = normalization(torch.randn(self.size, device=self.device))
+        v_list = [torch.zeros(self.size), v]
+        # empty lists for storing alpha and beta values
+        alpha_list = []
+        beta_list = [0]
+        for i in range(iter):
+            w = self.matvec(v_list[-1])
+            alpha = torch.dot(v_list[-1], w)
+            # reorthogonalization
+            for v in v_list:
+                w = w - torch.dot(w, v) * v
+            # double reorthogonalization
+            for v in v_list:
+                w = w - torch.dot(w, v) * v
+            beta = torch.sqrt(torch.dot(w, w))
+            if beta == 0:
+                raise ValueError("beta is zero!")
+            v = w / beta
+            v_list.append(v)
+            alpha_list.append(alpha.cpu().item())
+            beta_list.append(beta.cpu().item())
+        # remove the first element of beta_list
+        beta_list = beta_list[1:]
+        T = torch.zeros(iter, iter).to(self.device)
+        for i in range(len(alpha_list)):
+            T[i, i] = alpha_list[i]
+            if i < len(alpha_list) - 1:
+                T[i + 1, i] = beta_list[i]
+                T[i, i + 1] = beta_list[i]
+        eigenvalues, eigenvectors = torch.linalg.eig(T)
+        eigen_list = eigenvalues.real
+        weight_list = torch.pow(eigenvectors[0, :], 2)
+        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
 
     def fast_lanczos_papyan(self, iter, seed=0):
         """
@@ -214,6 +215,7 @@ class matrix:
     def fast_lanczos_demmel(self, iter, seed=0):
         """
         compute the eigenvalues using slow lanczos algorithm (Demmel implementation; no reorthogonalization)
+        iter: number of iterations (should be set to number of parameters for full spectrum)
         """
         # generate random vector
         if seed != 0:
@@ -227,6 +229,44 @@ class matrix:
             w = self.matvec(v_list[-1])
             alpha = torch.dot(v_list[-1], w)
             w = w - alpha * v_list[-1] - beta_list[-1] * v_list[-2]
+            beta = torch.sqrt(torch.dot(w, w))
+            if beta == 0:
+                raise ValueError("beta is zero!")
+            v = w / beta
+            v_list.append(v)
+            alpha_list.append(alpha.cpu().item())
+            beta_list.append(beta.cpu().item())
+        # remove the first element of beta_list
+        beta_list = beta_list[1:]
+        T = torch.zeros(iter, iter).to(self.device)
+        for i in range(len(alpha_list)):
+            T[i, i] = alpha_list[i]
+            if i < len(alpha_list) - 1:
+                T[i + 1, i] = beta_list[i]
+                T[i, i + 1] = beta_list[i]
+        eigenvalues, eigenvectors = torch.linalg.eig(T)
+        eigen_list = eigenvalues.real
+        weight_list = torch.pow(eigenvectors[0, :], 2)
+        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
+    
+    def selective_lanczos_demmel(self, iter, seed=0):
+        """ 
+        compute the eigenvalues using selective lanczos algorithm (Demmel implementation; with selective reorthogonalization)
+        iter: number of iterations (should be set to number of parameters for full spectrum)
+        """
+        # generate random vector
+        if seed != 0:
+            torch.manual_seed(seed)
+        v = normalization(torch.randn(self.size, device=self.device))
+        v_list = [0, v]
+        # empty lists for storing alpha and beta values
+        alpha_list = []
+        beta_list = [0]
+        for i in range(iter):
+            w = self.matvec(v_list[-1])
+            alpha = torch.dot(v_list[-1], w)
+            w = w - alpha * v_list[-1] - beta_list[-1] * v_list[-2]
+            # TODO: selective reorthogonalization
             beta = torch.sqrt(torch.dot(w, w))
             if beta == 0:
                 raise ValueError("beta is zero!")
