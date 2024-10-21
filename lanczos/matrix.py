@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-from utils import *
+from utils import normalization, orthnormal, form_tridiagonal_mtx
 
 
 class matrix:
@@ -43,7 +43,7 @@ class matrix:
         """
         compute matrix-vector product using the full matrix
         """
-        return torch.matmul(self.compute_self(), h)
+        return torch.matmul(self.get_matrix(), h)
 
     def slow_lanczos_pyhessian(self, iter, seed=0):
         """
@@ -85,12 +85,7 @@ class matrix:
                 alpha_list.append(alpha.cpu().item())
                 w = w_prime - alpha * v - beta * v_list[-2]
 
-        T = torch.zeros(iter, iter).to(self.device)
-        for i in range(len(alpha_list)):
-            T[i, i] = alpha_list[i]
-            if i < len(alpha_list) - 1:
-                T[i + 1, i] = beta_list[i]
-                T[i, i + 1] = beta_list[i]
+        T = form_tridiagonal_mtx(alpha_list, beta_list, self.device)
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
@@ -124,12 +119,7 @@ class matrix:
             alpha_list.append(alpha.cpu().item())
             beta_list.append(beta.cpu().item())
 
-        T = torch.zeros(iter, iter).to(self.device)
-        for i in range(len(alpha_list)):
-            T[i, i] = alpha_list[i]
-            if i < len(alpha_list) - 1:
-                T[i + 1, i] = beta_list[i]
-                T[i, i + 1] = beta_list[i]
+        T = form_tridiagonal_mtx(alpha_list, beta_list, self.device)
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
@@ -164,14 +154,10 @@ class matrix:
             v_list.append(v)
             alpha_list.append(alpha.cpu().item())
             beta_list.append(beta.cpu().item())
+
         # remove the first element of beta_list
         beta_list = beta_list[1:]
-        T = torch.zeros(iter, iter).to(self.device)
-        for i in range(len(alpha_list)):
-            T[i, i] = alpha_list[i]
-            if i < len(alpha_list) - 1:
-                T[i + 1, i] = beta_list[i]
-                T[i, i + 1] = beta_list[i]
+        T = form_tridiagonal_mtx(alpha_list, beta_list, self.device)
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
@@ -201,12 +187,7 @@ class matrix:
             alpha_list.append(alpha.cpu().item())
             beta_list.append(beta.cpu().item())
 
-        T = torch.zeros(iter, iter).to(self.device)
-        for i in range(len(alpha_list)):
-            T[i, i] = alpha_list[i]
-            if i < len(alpha_list) - 1:
-                T[i + 1, i] = beta_list[i]
-                T[i, i + 1] = beta_list[i]
+        T = form_tridiagonal_mtx(alpha_list, beta_list, self.device)
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
@@ -236,14 +217,10 @@ class matrix:
             v_list.append(v)
             alpha_list.append(alpha.cpu().item())
             beta_list.append(beta.cpu().item())
+        
         # remove the first element of beta_list
         beta_list = beta_list[1:]
-        T = torch.zeros(iter, iter).to(self.device)
-        for i in range(len(alpha_list)):
-            T[i, i] = alpha_list[i]
-            if i < len(alpha_list) - 1:
-                T[i + 1, i] = beta_list[i]
-                T[i, i + 1] = beta_list[i]
+        T = form_tridiagonal_mtx(alpha_list, beta_list, self.device)
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
@@ -274,14 +251,10 @@ class matrix:
             v_list.append(v)
             alpha_list.append(alpha.cpu().item())
             beta_list.append(beta.cpu().item())
+            
         # remove the first element of beta_list
         beta_list = beta_list[1:]
-        T = torch.zeros(iter, iter).to(self.device)
-        for i in range(len(alpha_list)):
-            T[i, i] = alpha_list[i]
-            if i < len(alpha_list) - 1:
-                T[i + 1, i] = beta_list[i]
-                T[i, i + 1] = beta_list[i]
+        T = form_tridiagonal_mtx(alpha_list, beta_list, self.device)
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
@@ -290,16 +263,31 @@ class matrix:
     def stochastic_lanczos_quadrature(self, method, iter=100, n_v=1):
         eigen_list_full = []
         weight_list_full = []
-        if method == "slow":
+        if method == "slow_pyhessian":
             for i in range(n_v):
                 eigen_list, weight_list = self.slow_lanczos_pyhessian(iter)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
-        elif method == "fast":
+        elif method == "slow_papyan":
+            for i in range(n_v):
+                eigen_list, weight_list = self.slow_lanczos_papyan(iter)
+                eigen_list_full.append(eigen_list)
+                weight_list_full.append(weight_list)
+        elif method == "slow_demmel":
+            for i in range(n_v):
+                eigen_list, weight_list = self.slow_lanczos_demmel(iter)
+                eigen_list_full.append(eigen_list)
+                weight_list_full.append(weight_list)
+        elif method == "fast_papyan":
             for i in range(n_v):
                 eigen_list, weight_list = self.fast_lanczos_papyan(iter)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
+        elif method == "fast_demmel":
+            for i in range(n_v):
+                eigen_list, weight_list = self.fast_lanczos_demmel(iter)
+                eigen_list_full.append(eigen_list)
+                weight_list_full.append(weight_list)
         else:
-            raise ValueError("Lanczos method should be either slow or fast!")
+            raise ValueError("Invalid method")
         return eigen_list_full, weight_list_full
