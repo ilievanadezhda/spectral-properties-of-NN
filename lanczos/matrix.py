@@ -56,7 +56,6 @@ class matrix:
         v = normalization(torch.randn(self.size, device=self.device))
         # standard lanczos algorithm initlization
         v_list = [v]
-        w_list = []
         alpha_list = []
         beta_list = []
         for i in range(iter):
@@ -66,7 +65,6 @@ class matrix:
                 alpha = torch.dot(w_prime, v)
                 alpha_list.append(alpha.cpu().item())
                 w = w_prime - alpha * v
-                w_list.append(w)
             else:
                 beta = torch.sqrt(torch.dot(w, w))
                 beta_list.append(beta.cpu().item())
@@ -90,7 +88,7 @@ class matrix:
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
 
-        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
+        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy()), alpha_list, beta_list
 
     def slow_lanczos_papyan(self, iter, seed=0):
         """
@@ -114,7 +112,7 @@ class matrix:
             for v in v_list:
                 w = w - torch.dot(w, v) * v
             beta = torch.sqrt(torch.dot(w, w))
-            v = w / beta
+            v = normalization(w)
             v_list.append(v)
             alpha_list.append(alpha.cpu().item())
             beta_list.append(beta.cpu().item())
@@ -123,7 +121,7 @@ class matrix:
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
-        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
+        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy()), alpha_list, beta_list
         
     def slow_lanczos_demmel(self, iter, seed=0):
         """
@@ -148,9 +146,9 @@ class matrix:
             for v in v_list:
                 w = w - torch.dot(w, v) * v
             beta = torch.sqrt(torch.dot(w, w))
-            if beta == 0:
-                raise ValueError("beta is zero!")
-            v = w / beta
+            # if beta == 0:
+            #     raise ValueError("beta is zero!")
+            v = normalization(w)
             v_list.append(v)
             alpha_list.append(alpha.cpu().item())
             beta_list.append(beta.cpu().item())
@@ -161,7 +159,7 @@ class matrix:
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
-        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
+        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy()), alpha_list, beta_list
 
     def fast_lanczos_papyan(self, iter, seed=0):
         """
@@ -181,7 +179,7 @@ class matrix:
             alpha = torch.dot(v_next, v)
             v_next = v_next - alpha * v
             beta = torch.sqrt(torch.dot(v_next, v_next))
-            v_next = v_next / beta
+            v_next = normalization(v_next)
             v_prev = v
             v = v_next
             alpha_list.append(alpha.cpu().item())
@@ -191,7 +189,7 @@ class matrix:
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
-        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
+        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy()), alpha_list, beta_list
     
     def fast_lanczos_demmel(self, iter, seed=0):
         """
@@ -213,7 +211,7 @@ class matrix:
             beta = torch.sqrt(torch.dot(w, w))
             if beta == 0:
                 raise ValueError("beta is zero!")
-            v = w / beta
+            v = normalization(w)
             v_list.append(v)
             alpha_list.append(alpha.cpu().item())
             beta_list.append(beta.cpu().item())
@@ -224,68 +222,81 @@ class matrix:
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
-        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
+        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy()), alpha_list, beta_list
     
-    def selective_lanczos_demmel(self, iter, seed=0):
-        """ 
-        compute the eigenvalues using selective lanczos algorithm (Demmel implementation; with selective reorthogonalization)
+    def d_lanczos_pyhessian(self, iter, d, seed=0):
+        """
+        compute the eigenvalues using slow lanczos algorithm (inspired by PyHessian implementation; with d-reorthogonalization)
         iter: number of iterations (should be set to number of parameters for full spectrum)
         """
         # generate random vector
         if seed != 0:
             torch.manual_seed(seed)
         v = normalization(torch.randn(self.size, device=self.device))
-        v_list = [0, v]
-        # empty lists for storing alpha and beta values
+        v_prev = v.clone()
+        # standard lanczos algorithm initlization
+        v_list = [] if d == 0 else [v]
         alpha_list = []
-        beta_list = [0]
+        beta_list = []
         for i in range(iter):
-            w = self.matvec(v_list[-1])
-            alpha = torch.dot(v_list[-1], w)
-            w = w - alpha * v_list[-1] - beta_list[-1] * v_list[-2]
-            # TODO: selective reorthogonalization
-            beta = torch.sqrt(torch.dot(w, w))
-            if beta == 0:
-                raise ValueError("beta is zero!")
-            v = w / beta
-            v_list.append(v)
-            alpha_list.append(alpha.cpu().item())
-            beta_list.append(beta.cpu().item())
-            
-        # remove the first element of beta_list
-        beta_list = beta_list[1:]
+            w_prime = torch.zeros(self.size, device=self.device)
+            if i == 0:
+                w_prime = self.matvec(v)
+                alpha = torch.dot(w_prime, v)
+                alpha_list.append(alpha.cpu().item())
+                w = w_prime - alpha * v
+            else:
+                beta = torch.sqrt(torch.dot(w, w))
+                beta_list.append(beta.cpu().item())
+                if beta_list[-1] != 0.0:
+                    # We should re-orth it
+                    v = orthnormal(w, v_list)
+                    if len(v_list) < d: v_list.append(v)                   
+                else:
+                    # generate a new vector
+                    print("beta is zero, generate a new vector, iter = ", i)
+                    w = torch.randn(self.size, device=self.device)
+                    v = orthnormal(w, v_list)
+                    if len(v_list) < d: v_list.append(v) 
+                w_prime = self.matvec(v)
+                alpha = torch.dot(w_prime, v)
+                alpha_list.append(alpha.cpu().item())
+                w = w_prime - alpha * v - beta * v_prev
+                v_prev = v.clone()
+
         T = form_tridiagonal_mtx(alpha_list, beta_list, self.device)
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
-        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
 
+        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy()), alpha_list, beta_list
+           
     def stochastic_lanczos_quadrature(self, method, iter=100, n_v=1):
         eigen_list_full = []
         weight_list_full = []
         if method == "slow_pyhessian":
             for i in range(n_v):
-                eigen_list, weight_list = self.slow_lanczos_pyhessian(iter)
+                eigen_list, weight_list, _, _ = self.slow_lanczos_pyhessian(iter)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
         elif method == "slow_papyan":
             for i in range(n_v):
-                eigen_list, weight_list = self.slow_lanczos_papyan(iter)
+                eigen_list, weight_list, _, _ = self.slow_lanczos_papyan(iter)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
         elif method == "slow_demmel":
             for i in range(n_v):
-                eigen_list, weight_list = self.slow_lanczos_demmel(iter)
+                eigen_list, weight_list, _, _ = self.slow_lanczos_demmel(iter)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
         elif method == "fast_papyan":
             for i in range(n_v):
-                eigen_list, weight_list = self.fast_lanczos_papyan(iter)
+                eigen_list, weight_list, _, _ = self.fast_lanczos_papyan(iter)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
         elif method == "fast_demmel":
             for i in range(n_v):
-                eigen_list, weight_list = self.fast_lanczos_demmel(iter)
+                eigen_list, weight_list, _, _ = self.fast_lanczos_demmel(iter)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
         else:

@@ -2,56 +2,53 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_hessian_spectrum_hist(eigenvalues, num_bins=500):
+def plot_spectrum_histogram(eigenvalues, num_bins, density=False):
     """
-    plot the eigenvalues of the Hessian matrix as a histogram (log scale)
+    plot the eigenvalue spectrum as a histogram (log scale)
     """
-    plt.hist(eigenvalues, bins=num_bins, color='b', alpha=0.7)
-    plt.yscale('log')
-    plt.xlabel('Eigenvalues', fontsize=12)
-    plt.ylabel('Count', fontsize=12)
-    plt.title('Hessian Spectrum', fontsize=14)
+    plt.hist(eigenvalues, bins=num_bins, alpha=0.7, density=density)
+    plt.yscale("log")
+    plt.xlabel("Eigenvalues", fontsize=12)
+    plt.ylabel("Count", fontsize=12)
+    plt.title("Eigenvalue Spectrum (Histogram)", fontsize=14)
     plt.grid(True)
     plt.show()
 
 
-def plot_hessian_spectrum_density(eigenvalues, num_bins=500):
+def plot_spectrum(eigenvalues):
     """
-    plot the density of the eigenvalues of the Hessian matrix
-    """
-    plt.hist(eigenvalues, bins=num_bins, density=True, color='b', alpha=0.7)
-    plt.yscale('log')
-    plt.xlabel('Eigenvalues', fontsize=12)
-    plt.ylabel('Density', fontsize=12)
-    plt.title('Hessian Eigenvalues Spectral Density (ESD)', fontsize=14)
-    plt.grid(True)
-    plt.show()
-
-
-def plot_hessian_spectrum_density_(eigenvalues, num_bins=500):
-    """
-    Plot the density of the eigenvalues of the Hessian matrX
-    """
-    counts, bin_edges = np.histogram(eigenvalues, bins=num_bins, density=True)
-    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-    plt.plot(bin_centers, counts, marker='o', linestyle='-', color='b')
-    plt.yscale('log')
-    plt.xlabel('Eigenvalue', fontsize=12)
-    plt.ylabel('Density (log scale)', fontsize=12)
-    plt.title('Hessian Eigenvalues Spectral Density (ESD)', fontsize=14)
-    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-    plt.show()
-
-
-def plot_hessian_spectrum(eigenvalues):
-    """
-    plot the eigenvalues of the Hessian matrix
+    plot the eigenvalue spectrum
     """
     sorted_eigenvalues = np.sort(eigenvalues)
     x_indices = np.arange(1, len(sorted_eigenvalues) + 1)
-    plt.plot(x_indices, sorted_eigenvalues, marker='o', linestyle='-', color='red')
-    plt.xlabel('Index', fontsize=12)
-    plt.ylabel('Eigenvalue', fontsize=12)
-    plt.title('Hessian Spectrum', fontsize=14)
+    plt.plot(x_indices, sorted_eigenvalues, marker="o", linestyle="-", color="red")
+    plt.xlabel(r"Index, $i$", fontsize=12)
+    plt.ylabel(r"Eigenvalue, $\lambda_{i}$", fontsize=12)
+    plt.title("Eigenvalue Spectrum", fontsize=14)
     plt.grid(True)
+    plt.show()
+
+
+def plot_spectrum_combined(eigenvalues, num_bins, title, density=False):
+    """
+    plot the eigenvalue spectrum as a histogram and line plot
+    """
+    # plot histogram
+    fig, axs = plt.subplots(1, 2, figsize=(15, 6))
+    fig.suptitle(title, fontsize=16)
+    axs[0].hist(eigenvalues, bins=num_bins, alpha=0.7, density=density)
+    axs[0].set_yscale("log")
+    axs[0].set_xlabel("Eigenvalues", fontsize=12)
+    axs[0].set_ylabel("Count", fontsize=12)
+    axs[0].set_title("Eigenvalue Spectrum (Histogram)", fontsize=14)
+    axs[0].grid(True)
+    # plot line plot
+    sorted_eigenvalues = np.sort(eigenvalues)
+    x_indices = np.arange(1, len(sorted_eigenvalues) + 1)
+    axs[1].plot(x_indices, sorted_eigenvalues, marker="o", linestyle="-", color="red")
+    axs[1].set_xlabel(r"Index, $i$", fontsize=12)
+    axs[1].set_ylabel(r"Eigenvalue, $\lambda_{i}$", fontsize=12)
+    axs[1].set_title("Eigenvalue Spectrum", fontsize=14)
+    axs[1].grid(True)
+    plt.tight_layout()
     plt.show()

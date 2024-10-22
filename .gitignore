@@ -1,4 +1,6 @@
 data/
 results/
-pyhessian/__pycache__/
 __pycache__/
+pyhessian/__pycache__/
+lanczos/__pycache__
+archive/
