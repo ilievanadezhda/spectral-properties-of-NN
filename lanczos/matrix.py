@@ -300,32 +300,32 @@ class matrix:
         weight_list = torch.pow(eigenvectors[0, :], 2)
         return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy()), alpha_list, beta_list
                
-    def stochastic_lanczos_quadrature(self, method, iter=100, n_v=1):
+    def stochastic_lanczos_quadrature(self, method, iter=100, n_v=1, seed=0):
         eigen_list_full = []
         weight_list_full = []
         if method == "slow_pyhessian":
             for i in range(n_v):
-                eigen_list, weight_list, _, _ = self.slow_lanczos_pyhessian(iter)
+                eigen_list, weight_list, _, _ = self.slow_lanczos_pyhessian(iter, seed)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
         elif method == "slow_papyan":
             for i in range(n_v):
-                eigen_list, weight_list, _, _ = self.slow_lanczos_papyan(iter)
+                eigen_list, weight_list, _, _ = self.slow_lanczos_papyan(iter, seed)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
         elif method == "slow_demmel":
             for i in range(n_v):
-                eigen_list, weight_list, _, _ = self.slow_lanczos_demmel(iter)
+                eigen_list, weight_list, _, _ = self.slow_lanczos_demmel(iter, seed)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
         elif method == "fast_papyan":
             for i in range(n_v):
-                eigen_list, weight_list, _, _ = self.fast_lanczos_papyan(iter)
+                eigen_list, weight_list, _, _ = self.fast_lanczos_papyan(iter, seed)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
         elif method == "fast_demmel":
             for i in range(n_v):
-                eigen_list, weight_list, _, _ = self.fast_lanczos_demmel(iter)
+                eigen_list, weight_list, _, _ = self.fast_lanczos_demmel(iter, seed)
                 eigen_list_full.append(eigen_list)
                 weight_list_full.append(weight_list)
         else:
