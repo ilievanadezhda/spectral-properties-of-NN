@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-from utils import normalization, orthnormal, form_tridiagonal_mtx
+from utils import normalization, orthnormal, orthogonal, form_tridiagonal_mtx
 
 
 class matrix:
@@ -109,8 +109,7 @@ class matrix:
             alpha = torch.dot(v_list[-1], w)
             w = w - alpha * v_list[-1]
             # reorthogonalization
-            for v in v_list:
-                w = w - torch.dot(w, v) * v
+            w = orthogonal(w, v_list)   
             beta = torch.sqrt(torch.dot(w, w))
             v = normalization(w)
             v_list.append(v)
@@ -140,11 +139,9 @@ class matrix:
             w = self.matvec(v_list[-1])
             alpha = torch.dot(v_list[-1], w)
             # reorthogonalization
-            for v in v_list:
-                w = w - torch.dot(w, v) * v
+            w = orthogonal(w, v_list)
             # double reorthogonalization
-            for v in v_list:
-                w = w - torch.dot(w, v) * v
+            w = orthogonal(w, v_list)
             beta = torch.sqrt(torch.dot(w, w))
             # if beta == 0:
             #     raise ValueError("beta is zero!")
@@ -226,7 +223,7 @@ class matrix:
     
     def d_lanczos_pyhessian(self, iter, d, seed=0):
         """
-        compute the eigenvalues using slow lanczos algorithm (inspired by PyHessian implementation; with d-reorthogonalization)
+        compute the eigenvalues using d-lanczos algorithm (inspired by PyHessian implementation; with d-reorthogonalization)
         iter: number of iterations (should be set to number of parameters for full spectrum)
         """
         # generate random vector
@@ -268,9 +265,41 @@ class matrix:
         eigenvalues, eigenvectors = torch.linalg.eig(T)
         eigen_list = eigenvalues.real
         weight_list = torch.pow(eigenvectors[0, :], 2)
-
         return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy()), alpha_list, beta_list
-           
+        
+    def d_lanczos_papyan(self, iter, d, seed=0):
+        """
+        compute the eigenvalues using d-lanczos algorithm (inspired by Papyan implementation; with d-reorthogonalization)
+        iter: number of iterations (should be set to number of parameters for full spectrum)
+        """
+        alpha_list = []
+        beta_list = []
+        for i in range(iter):
+            if i == 0:
+                if seed != 0:
+                    torch.manual_seed(seed)
+                v = normalization(torch.randn(self.size, device=self.device))
+                v_list = [] if d == 0 else [v]
+                v_next = self.matvec(v)
+            else:
+                v_next = self.matvec(v) - beta_list[-1] * v_prev
+            alpha = torch.dot(v_next, v)
+            v_next = v_next - alpha * v
+            v_next = orthogonal(v_next, v_list)
+            beta = torch.sqrt(torch.dot(v_next, v_next))
+            v_next = normalization(v_next)
+            if len(v_list) < d: v_list.append(v_next)
+            v_prev = v
+            v = v_next
+            alpha_list.append(alpha.cpu().item())
+            beta_list.append(beta.cpu().item())
+
+        T = form_tridiagonal_mtx(alpha_list, beta_list, self.device)
+        eigenvalues, eigenvectors = torch.linalg.eig(T)
+        eigen_list = eigenvalues.real
+        weight_list = torch.pow(eigenvectors[0, :], 2)
+        return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy()), alpha_list, beta_list
+               
     def stochastic_lanczos_quadrature(self, method, iter=100, n_v=1):
         eigen_list_full = []
         weight_list_full = []

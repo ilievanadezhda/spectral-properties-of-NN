@@ -21,6 +21,15 @@ def orthnormal(w, v_list):
     return normalization(w)
 
 
+def orthogonal(w, v_list):
+    """
+    make vector w orthogonal to each vector in v_list.
+    """
+    for v in v_list:
+        w = w - torch.dot(w, v) * v
+    return w
+
+
 def form_tridiagonal_mtx(alpha_list, beta_list, device):
     """
     form a tridiagonal matrix with alpha_list and beta_list
