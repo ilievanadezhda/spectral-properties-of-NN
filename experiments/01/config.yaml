@@ -13,5 +13,5 @@
 "optim_momentum": 0.9
 
 # training
-"epochs": 5
+"epochs": 10
 

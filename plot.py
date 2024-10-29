@@ -26,23 +26,29 @@ def main():
                             batch_size = int(batch_dir.split('_')[1])
                             batch_path = os.path.join(lanczos_dir, batch_dir)
                             
-                            # find iteration files
-                            for file in os.listdir(batch_path):
-                                if file.startswith('eigenvalues_iter_'):
-                                    # extract number of iterations
-                                    iter_num = int(file.split('_')[-1].split('.')[0])
+                            # iterate through run folders
+                            for run_dir in os.listdir(batch_path):
+                                if run_dir.endswith('_run'):
+                                    run_path = os.path.join(batch_path, run_dir)
+                                    run_num = int(run_dir.split('_')[0])
                                     
-                                    # load eigenvalues and weights
-                                    eigenvalues = torch.load(os.path.join(batch_path, f'eigenvalues_iter_{iter_num}.pt'))
-                                    weights = torch.load(os.path.join(batch_path, f'weights_iter_{iter_num}.pt'))
-                                    
-                                    # create title for the plot
-                                    title = f"Spectrum: {flag.capitalize()} Model"
-                                    legend = f"Details:\nAlgorithm: {lanczos.capitalize()} Lanczos\nHessian Batch Size: {batch_size}\nLanczos Iterations: {iter_num}"
-                                    
-                                    # save plot
-                                    plot_path = os.path.join(batch_path, f'spectrum_plot_iter_{iter_num}.png')
-                                    plot_spectrum_combined(eigenvalues, num_bins=100, title=title, legend=legend, path=plot_path)
+                                    # find iteration files
+                                    for file in os.listdir(run_path):
+                                        if file.startswith('eigenvalues_iter_'):
+                                            # extract number of iterations
+                                            iter_num = int(file.split('_')[-1].split('.')[0])
+                                            
+                                            # load eigenvalues and weights
+                                            eigenvalues = torch.load(os.path.join(run_path, f'eigenvalues_iter_{iter_num}.pt'))
+                                            weights = torch.load(os.path.join(run_path, f'weights_iter_{iter_num}.pt'))
+                                            
+                                            # create title for the plot
+                                            title = f"Spectrum: {flag.capitalize()} Model"
+                                            legend = f"Details:\nAlgorithm: {lanczos.capitalize()} Lanczos\nHessian Batch Size: {batch_size}\nLanczos Iterations: {iter_num}\nRun: {run_num}"
+                                            
+                                            # save plot
+                                            plot_path = os.path.join(run_path, f'spectrum_plot_iter_{iter_num}.png')
+                                            plot_spectrum_combined(eigenvalues, num_bins=100, title=title, legend=legend, path=plot_path)
                                 
     
 if __name__ == "__main__":
