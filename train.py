@@ -3,7 +3,9 @@ import torch
 import yaml
 import argparse
 from omegaconf import OmegaConf
+# saving 
 import os
+import numpy as np
 
 # training utils
 from src.utils.train_utils import *
@@ -18,11 +20,15 @@ def main():
     
     # create model
     model = prepare_model(args)
+    # get number of parameters
+    num_params = sum(p.numel() for p in model.parameters())
     # print number of parameters
-    print(f"Number of parameters: {sum(p.numel() for p in model.parameters())}")
-    # write number of parameters to file
+    print(f"Number of parameters: {num_params}")
+    # write number of parameters to files
     with open(f"{parser_args.path}/num_parameters.txt", "w") as f:
-        f.write(f"Number of parameters: {sum(p.numel() for p in model.parameters())}")
+        f.write(f"Number of parameters: {num_params}")
+    # save as numpy file
+    np.save(f"{parser_args.path}/num_parameters.npy", num_params)
     
     # create loss function
     criterion = nn.CrossEntropyLoss()

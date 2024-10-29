@@ -29,18 +29,19 @@ def plot_spectrum(eigenvalues):
     plt.show()
 
 
-def plot_spectrum_combined(eigenvalues, num_bins, title, density=False):
+def plot_spectrum_combined(eigenvalues, num_bins, title, legend, density=False, path=None):
     """
     plot the eigenvalue spectrum as a histogram and line plot
     """
     # plot histogram
-    fig, axs = plt.subplots(1, 2, figsize=(15, 6))
+    fig, axs = plt.subplots(1, 2, figsize=(15, 8))
     fig.suptitle(title, fontsize=16)
     axs[0].hist(eigenvalues, bins=num_bins, alpha=0.7, density=density)
     axs[0].set_yscale("log")
     axs[0].set_xlabel("Eigenvalues", fontsize=12)
     axs[0].set_ylabel("Count", fontsize=12)
     axs[0].set_title("Eigenvalue Spectrum (Histogram)", fontsize=14)
+    axs[0].legend([legend])
     axs[0].grid(True)
     # plot line plot
     sorted_eigenvalues = np.sort(eigenvalues)
@@ -50,5 +51,9 @@ def plot_spectrum_combined(eigenvalues, num_bins, title, density=False):
     axs[1].set_ylabel(r"Eigenvalue, $\lambda_{i}$", fontsize=12)
     axs[1].set_title("Eigenvalue Spectrum", fontsize=14)
     axs[1].grid(True)
+    # plt.figtext(0.5, 0.01, figtext, wrap=False, horizontalalignment="center", fontsize=12)
     plt.tight_layout()
+    if path:
+        plt.savefig(path)
     plt.show()
+    
