@@ -1,6 +1,2 @@
-data/
-results/
 __pycache__/
-pyhessian/__pycache__/
-lanczos/__pycache__
-archive/
+data/
