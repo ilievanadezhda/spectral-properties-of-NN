@@ -40,7 +40,7 @@ def main():
                                             
                                             # load eigenvalues and weights
                                             eigenvalues = torch.load(os.path.join(run_path, f'eigenvalues_iter_{iter_num}.pt'))
-                                            weights = torch.load(os.path.join(run_path, f'weights_iter_{iter_num}.pt'))
+                                            # weights = torch.load(os.path.join(run_path, f'weights_iter_{iter_num}.pt'))
                                             
                                             # create title for the plot
                                             title = f"Spectrum: {flag.capitalize()} Model"

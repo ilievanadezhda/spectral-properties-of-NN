@@ -54,15 +54,18 @@ def main():
         # create hessian computation module
         hessian_computation_module = hessian(model, criterion=nn.CrossEntropyLoss(), data=(inputs, targets), cuda=cuda)
 
-        # run slow lanczos algorithm
-        eigenvalues_slow, weights_slow = hessian_computation_module.slow_lanczos(iter = parser_args.iter)
+        # run lanczos algorithm
+        if parser_args.lanczos == "fast":
+            eigenvalues, weights = hessian_computation_module.fast_lanczos(iter = parser_args.iter)
+        elif parser_args.lanczos == "slow":
+            eigenvalues, weights = hessian_computation_module.slow_lanczos(iter = parser_args.iter)
               
-        # Create run-specific directory
+        # create run-specific directory
         run_dir = os.path.join(save_dir, f"{run:02d}_run")
         os.makedirs(run_dir, exist_ok=True)
         
-        # Save eigenvalues and weights for this run
-        torch.save(eigenvalues_slow, f"{run_dir}/eigenvalues_iter_{parser_args.iter}.pt")
-        torch.save(weights_slow, f"{run_dir}/weights_iter_{parser_args.iter}.pt")
+        # save eigenvalues and weights for this run
+        torch.save(eigenvalues, f"{run_dir}/eigenvalues_iter_{parser_args.iter}.pt")
+        torch.save(weights, f"{run_dir}/weights_iter_{parser_args.iter}.pt")
 if __name__ == "__main__":
     main()
