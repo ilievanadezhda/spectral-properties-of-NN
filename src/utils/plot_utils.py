@@ -36,7 +36,7 @@ def plot_spectrum_combined(eigenvalues, num_bins, title, legend, density=False, 
     # plot histogram
     fig, axs = plt.subplots(1, 2, figsize=(15, 8))
     fig.suptitle(title, fontsize=16)
-    axs[0].hist(eigenvalues, bins=num_bins, alpha=0.7, density=density)
+    axs[0].hist(eigenvalues, bins=num_bins, alpha=0.7, edgecolor='black', density=density)
     axs[0].set_yscale("log")
     axs[0].set_xlabel("Eigenvalues", fontsize=12)
     axs[0].set_ylabel("Count", fontsize=12)
@@ -46,7 +46,8 @@ def plot_spectrum_combined(eigenvalues, num_bins, title, legend, density=False, 
     # plot line plot
     sorted_eigenvalues = np.sort(eigenvalues)
     x_indices = np.arange(1, len(sorted_eigenvalues) + 1)
-    axs[1].plot(x_indices, sorted_eigenvalues, marker="o", linestyle="-", color="red")
+    axs[1].plot(x_indices, sorted_eigenvalues, marker="o", linestyle="", color="red", markersize=3)
+    axs[1].axhline(y=0, color='black', linestyle='-', linewidth=0.5)  # Add horizontal line at y=0
     axs[1].set_xlabel(r"Index, $i$", fontsize=12)
     axs[1].set_ylabel(r"Eigenvalue, $\lambda_{i}$", fontsize=12)
     axs[1].set_title("Eigenvalue Spectrum", fontsize=14)
