@@ -89,6 +89,7 @@ def train(
     optimizer,
     epochs=10,
     device="cpu",
+    save_path=None,
 ):
     """
     Train a neural network model and evaluate on test data
@@ -158,6 +159,11 @@ def train(
         print(f"Test Loss: {test_epoch_loss:.4f}")
         print(f"Test Accuracy: {accuracy:.2f}%")
         print("-" * 60)
+
+        # save model checkpoint
+        if (epoch+1) % 5 == 0 and (epoch+1) != epochs and save_path is not None: 
+            print(f"Saving model checkpoint at epoch {epoch+1}")
+            torch.save(model.state_dict(), f"{save_path}/model_epoch_{epoch+1}.pth")
 
     print("Training complete!")
     return model

@@ -47,7 +47,7 @@ def main():
     torch.save(model.state_dict(), f"{parser_args.path}/checkpoints/model_untrained.pth")
     
     # train model
-    model = train(model, train_dataloader, test_dataloader, criterion, optimizer, args.epochs, device)
+    model = train(model, train_dataloader, test_dataloader, criterion, optimizer, args.epochs, device, f"{parser_args.path}/checkpoints")
     
     # save model after training
     torch.save(model.state_dict(), f"{parser_args.path}/checkpoints/model_trained.pth")

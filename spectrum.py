@@ -38,13 +38,7 @@ def main():
     for run in range(1, 4):
         # load model from checkpoint
         model = prepare_model(args)
-
-        if parser_args.flag == "trained":
-            model.load_state_dict(torch.load(f"{parser_args.path}/checkpoints/model_trained.pth"))
-        elif parser_args.flag == "untrained":
-            model.load_state_dict(torch.load(f"{parser_args.path}/checkpoints/model_untrained.pth"))
-        else:
-            raise ValueError("flag should be either 'trained' or 'untrained")
+        model.load_state_dict(torch.load(f"{parser_args.path}/checkpoints/model_{parser_args.flag}.pth"))
         model.eval()
 
         # get new batch of data

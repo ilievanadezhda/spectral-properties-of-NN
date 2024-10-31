@@ -55,5 +55,6 @@ def plot_spectrum_combined(eigenvalues, num_bins, title, legend, density=False, 
     plt.tight_layout()
     if path:
         plt.savefig(path)
-    plt.show()
-    
+    else:
+        plt.show()
+    plt.close()
