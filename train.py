@@ -6,9 +6,9 @@ from omegaconf import OmegaConf
 # saving 
 import os
 import numpy as np
-
 # training utils
 from src.utils.train_utils import *
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", type=str, default="experiments/test")

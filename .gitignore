@@ -2,3 +2,4 @@ __pycache__/
 data/
 checkpoints/
 results/
+playground.ipynb
