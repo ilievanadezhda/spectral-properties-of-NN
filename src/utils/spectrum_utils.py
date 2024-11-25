@@ -28,6 +28,28 @@ def prepare_hessian_data(dataset, hessian_batch_size):
         print("Loaded MNIST dataset for Hessian computation.")
         if hessian_batch_size == len(training_data):
             print("Using full dataset for Hessian computation.")
+    elif dataset == "CIFAR10":
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
+        training_data = datasets.CIFAR10(
+            root="data", train=True, download=True, transform=transform
+        )
+        if hessian_batch_size > len(training_data):
+            raise ValueError(
+                f"Batch size {hessian_batch_size} is larger than the dataset size {len(training_data)}"
+            )
+        hessian_dataloader = DataLoader(
+            training_data,
+            batch_size=hessian_batch_size,
+            shuffle=True,
+        )
+        print("Loaded CIFAR10 dataset for Hessian computation.")
+        if hessian_batch_size == len(training_data):
+            print("Using full dataset for Hessian computation.")
     else:
         raise ValueError(f"Dataset {dataset} not supported")
     print(f"Batch size for Hessian computation: {hessian_batch_size}")

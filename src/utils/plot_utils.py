@@ -11,7 +11,7 @@ def plot_spectrum_histogram(eigenvalues, num_bins, density=False):
     plt.xlabel("Eigenvalues", fontsize=12)
     plt.ylabel("Count", fontsize=12)
     plt.title("Eigenvalue Spectrum (Histogram)", fontsize=14)
-    plt.grid(True)
+    plt.grid(True, alpha=0.5, linestyle="--")
     plt.show()
 
 
@@ -25,7 +25,7 @@ def plot_spectrum(eigenvalues):
     plt.xlabel(r"Index, $i$", fontsize=12)
     plt.ylabel(r"Eigenvalue, $\lambda_{i}$", fontsize=12)
     plt.title("Eigenvalue Spectrum", fontsize=14)
-    plt.grid(True)
+    plt.grid(True, alpha=0.5, linestyle="--")
     plt.show()
 
 
@@ -35,14 +35,14 @@ def plot_spectrum_combined(eigenvalues, num_bins, title, legend, density=False, 
     """
     # plot histogram
     fig, axs = plt.subplots(1, 2, figsize=(15, 8))
-    fig.suptitle(title, fontsize=16)
+    fig.suptitle(title.replace("_", " "), fontsize=16)
     axs[0].hist(eigenvalues, bins=num_bins, alpha=0.7, edgecolor='black', density=density)
     axs[0].set_yscale("log")
     axs[0].set_xlabel("Eigenvalues", fontsize=12)
     axs[0].set_ylabel("Count", fontsize=12)
     axs[0].set_title("Eigenvalue Spectrum (Histogram)", fontsize=14)
     axs[0].legend([legend])
-    axs[0].grid(True)
+    axs[0].grid(True, alpha=0.5, linestyle="--")
     # plot line plot
     sorted_eigenvalues = np.sort(eigenvalues)
     x_indices = np.arange(1, len(sorted_eigenvalues) + 1)
@@ -51,7 +51,7 @@ def plot_spectrum_combined(eigenvalues, num_bins, title, legend, density=False, 
     axs[1].set_xlabel(r"Index, $i$", fontsize=12)
     axs[1].set_ylabel(r"Eigenvalue, $\lambda_{i}$", fontsize=12)
     axs[1].set_title("Eigenvalue Spectrum", fontsize=14)
-    axs[1].grid(True)
+    axs[1].grid(True, alpha=0.5, linestyle="--")
     # plt.figtext(0.5, 0.01, figtext, wrap=False, horizontalalignment="center", fontsize=12)
     plt.tight_layout()
     if path:

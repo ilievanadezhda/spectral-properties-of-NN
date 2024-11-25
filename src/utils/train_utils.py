@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 
 # models
 from src.models.NeuralNetwork import NeuralNetwork
+from src.models.ConvNetwork import ConvNetwork
 
 
 def prepare_data(args):
@@ -27,6 +28,20 @@ def prepare_data(args):
             root="data", train=False, download=True, transform=transforms.ToTensor()
         )
         print("Loaded MNIST dataset.")
+    elif args.dataset == "CIFAR10":
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
+        train_data = datasets.CIFAR10(
+            root="data", train=True, download=True, transform=transform
+        )
+        test_data = datasets.CIFAR10(
+            root="data", train=False, download=True, transform=transform
+        )
+        print("Loaded CIFAR10 dataset.")
     else:
         raise ValueError(f"Dataset {args.dataset} not supported")
 
@@ -53,6 +68,9 @@ def prepare_model(args):
         print(
             f"Initializing NeuralNetwork model with layer sizes {args.layer_sizes} and {args.activation} activation."
         )
+    elif args.model_name == "ConvNetwork":
+        model = ConvNetwork()
+        print(f"Initializing ConvNetwork model.")
     else:
         raise ValueError(f"Model {args.model_name} not supported")
     return model

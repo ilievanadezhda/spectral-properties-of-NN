@@ -48,6 +48,9 @@ def main():
         # create hessian computation module
         hessian_computation_module = hessian(model, criterion=nn.CrossEntropyLoss(), data=(inputs, targets), cuda=cuda)
 
+        # compute gradient norm
+        gradient_norm = hessian_computation_module.get_gradient_norm()
+
         # run lanczos algorithm
         if parser_args.lanczos == "fast":
             eigenvalues, weights = hessian_computation_module.fast_lanczos(iter = parser_args.iter)
@@ -58,7 +61,8 @@ def main():
         run_dir = os.path.join(save_dir, f"{run:02d}_run")
         os.makedirs(run_dir, exist_ok=True)
         
-        # save eigenvalues and weights for this run
+        # save gradient norm, eigenvalues and weights for this run
+        torch.save(gradient_norm, f"{run_dir}/gradient_norm_{parser_args.iter}.npy")
         torch.save(eigenvalues, f"{run_dir}/eigenvalues_iter_{parser_args.iter}.pt")
         torch.save(weights, f"{run_dir}/weights_iter_{parser_args.iter}.pt")
 if __name__ == "__main__":

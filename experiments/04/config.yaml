@@ -1,0 +1,21 @@
+# dataset
+"dataset": "CIFAR10"
+"batch_size": 64
+
+# model
+"model_name": "ConvNetwork"
+
+# optimizer
+"optim_name": "sgd"
+"optim_lr": 0.01
+"optim_momentum": 0.9
+
+# training
+"epochs": 15
+
+# Comments:
+# Training Loss: 0.7076
+# Test Loss: 1.2480
+# Test Accuracy: 60.85%
+
+

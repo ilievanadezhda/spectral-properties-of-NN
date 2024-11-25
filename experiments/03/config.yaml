@@ -4,7 +4,7 @@
 
 # model
 "model_name": "NeuralNetwork"
-"layer_sizes": [784, 64, 10]
+"layer_sizes": [784, 128, 64, 10]
 "activation": "Sigmoid"
 
 # optimizer
@@ -13,10 +13,10 @@
 "optim_momentum": 0.9
 
 # training
-"epochs": 15
+"epochs": 20
 
 # Comments:
-# Training Loss: 0.1529
-# Test Loss: 0.1520
-# Test Accuracy: 95.47%
+# Training Loss: 0.1163
+# Test Loss: 0.1264
+# Test Accuracy: 96.33%
 

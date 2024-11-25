@@ -1,7 +1,9 @@
 import torch
 from src.lanczos.utils import *
+
 # profiling
 from tqdm import tqdm
+
 
 class hessian:
     def __init__(self, model, criterion, data=None, dataloader=None, cuda=True):
@@ -76,8 +78,12 @@ class hessian:
         eigenvalue = group_product(THv, v).cpu().item()
         return eigenvalue, THv
 
+    def get_gradient_norm(self):
+        """Computes the gradient norm"""
+        return torch.norm(torch.cat([g.flatten() for g in self.gradsH])).item()
+
     def slow_lanczos(self, iter, seed=0):
-        """ Computes the eigenvalues using the Slow Lanczos algorithm (Papyan's implementation; with full reorthogonalization) 
+        """Computes the eigenvalues using the Slow Lanczos algorithm (Papyan's implementation; with full reorthogonalization)
 
         Args:
             iter: number of iterations (should be set to number of parameters for full spectrum)
@@ -132,7 +138,7 @@ class hessian:
         return list(eigen_list.cpu().numpy()), list(weight_list.cpu().numpy())
 
     def fast_lanczos(self, iter, seed=0):
-        """ Computes the eigenvalues using the Fast Lanczos algorithm (Papyan's implementation; without reorthogonalization)
+        """Computes the eigenvalues using the Fast Lanczos algorithm (Papyan's implementation; without reorthogonalization)
 
         Args:
             iter: number of iterations (should be set to number of parameters for full spectrum)
