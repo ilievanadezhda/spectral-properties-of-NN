@@ -65,5 +65,9 @@ def main():
         torch.save(gradient_norm, f"{run_dir}/gradient_norm_{parser_args.iter}.npy")
         torch.save(eigenvalues, f"{run_dir}/eigenvalues_iter_{parser_args.iter}.pt")
         torch.save(weights, f"{run_dir}/weights_iter_{parser_args.iter}.pt")
+
+        # delete model and hessian_computation_module
+        del model
+        del hessian_computation_module
 if __name__ == "__main__":
     main()

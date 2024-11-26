@@ -3,3 +3,4 @@ data/
 checkpoints/
 results/
 playground.ipynb
+groundtruth/

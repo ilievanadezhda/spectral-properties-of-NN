@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from src.lanczos.utils import *
 
 # profiling
@@ -31,10 +32,8 @@ class hessian:
             self.data = dataloader
             self.full_dataset = True
 
-        if cuda:
-            self.device = "cuda"
-        else:
-            self.device = "cpu"
+        # set the device
+        self.device = "cuda" if cuda else "cpu"
 
         # pre-processing for single batch case to simplify the computation.
         if not self.full_dataset:
@@ -81,6 +80,38 @@ class hessian:
     def get_gradient_norm(self):
         """Computes the gradient norm"""
         return torch.norm(torch.cat([g.flatten() for g in self.gradsH])).item()
+
+    def get_hessian(self):
+        """Computes the Hessian matrix using Hessian-vector products with 1-hot vectors"""
+        if self.full_dataset:
+            raise ValueError(
+                "Hessian computation is only supported for single batch data"
+            )
+        # get the number of parameters
+        num_params = sum(p.numel() for p in self.params)
+        # initialize the Hessian matrix
+        hessian_mtx = torch.zeros((num_params, num_params))
+        for i in tqdm(range(num_params)):
+            v = [torch.zeros(p.size()).to(self.device) for p in self.params]
+            # flatten the vector and set the i-th element to 1
+            flattened_v = torch.zeros(num_params).to(self.device)
+            flattened_v[i] = 1
+            # reshape the vector back to the original shape
+            reshaped_v = []
+            start = 0
+            for t in v:
+                numel = t.numel()  # get the number of elements in the current tensor
+                reshaped_v.append(
+                    flattened_v[start : start + numel].view_as(t)
+                )  # reshape the chunk back
+                start += numel
+            # compute the Hessian-vector product
+            hvp = hessian_vector_product(self.gradsH, self.params, reshaped_v)
+            hvp_flat = torch.cat([t.flatten() for t in hvp])
+            hessian_mtx[i] = hvp_flat
+        # transpose the Hessian matrix
+        hessian_mtx = hessian_mtx.T
+        return hessian_mtx
 
     def slow_lanczos(self, iter, seed=0):
         """Computes the eigenvalues using the Slow Lanczos algorithm (Papyan's implementation; with full reorthogonalization)
