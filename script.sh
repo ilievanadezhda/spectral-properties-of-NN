@@ -30,3 +30,6 @@ for ITER in 10 50 100 200 500 1000; do
     done
 done
 
+# To run the script
+# chmod +x script.sh
+# ./script.sh

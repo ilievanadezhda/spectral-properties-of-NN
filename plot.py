@@ -6,7 +6,7 @@ from src.utils.plot_utils import plot_spectrum_combined
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path", type=str, default="experiments/01") 
+    parser.add_argument("--path", type=str, default="experiments/test") 
     parser_args = parser.parse_args()
 
     # get the results directory path

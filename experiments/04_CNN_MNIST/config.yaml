@@ -1,9 +1,9 @@
 # dataset
-"dataset": "CIFAR10"
+"dataset": "MNIST"
 "batch_size": 64
 
 # model
-"model_name": "ConvNetwork"
+"model_name": "ConvNetworkMNIST"
 
 # optimizer
 "optim_name": "sgd"
@@ -14,8 +14,8 @@
 "epochs": 15
 
 # Comments:
-# Training Loss: 0.7076
-# Test Loss: 1.2480
-# Test Accuracy: 60.85%
+# Training Loss: 0.0096
+# Test Loss: 0.0441
+# Test Accuracy: 98.98%
 
 

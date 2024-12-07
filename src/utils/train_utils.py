@@ -7,7 +7,8 @@ from torch.utils.data import DataLoader
 
 # models
 from src.models.NeuralNetwork import NeuralNetwork
-from src.models.ConvNetwork import ConvNetwork
+from src.models.ConvNetworkCIFAR10 import ConvNetworkCIFAR10
+from src.models.ConvNetworkMNIST import ConvNetworkMNIST
 
 
 def prepare_data(args):
@@ -19,7 +20,7 @@ def prepare_data(args):
     Returns:
         train_dataloader : DataLoader containing training data
         test_dataloader : DataLoader containing test data
-    """    
+    """
     if args.dataset == "MNIST":
         train_data = datasets.MNIST(
             root="data", train=True, download=True, transform=transforms.ToTensor()
@@ -68,9 +69,12 @@ def prepare_model(args):
         print(
             f"Initializing NeuralNetwork model with layer sizes {args.layer_sizes} and {args.activation} activation."
         )
-    elif args.model_name == "ConvNetwork":
-        model = ConvNetwork()
+    elif args.model_name == "ConvNetworkCIFAR10":
+        model = ConvNetworkCIFAR10()
         print(f"Initializing ConvNetwork model.")
+    elif args.model_name == "ConvNetworkMNIST":
+        model = ConvNetworkMNIST()
+        print(f"Initializing ConvNetworkMNIST model.")
     else:
         raise ValueError(f"Model {args.model_name} not supported")
     return model
@@ -179,7 +183,7 @@ def train(
         print("-" * 60)
 
         # save model checkpoint
-        if (epoch+1) % 5 == 0 and (epoch+1) != epochs and save_path is not None: 
+        if (epoch + 1) % 5 == 0 and (epoch + 1) != epochs and save_path is not None:
             print(f"Saving model checkpoint at epoch {epoch+1}")
             torch.save(model.state_dict(), f"{save_path}/model_epoch_{epoch+1}.pth")
 

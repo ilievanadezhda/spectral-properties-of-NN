@@ -16,7 +16,7 @@ import os
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path", type=str, default="experiments/01")
+    parser.add_argument("--path", type=str, default="experiments/test")
     parser.add_argument("--flag", type=str, default="trained")
     parser.add_argument("--hessian_batch_size", type=int, default=100)
     parser.add_argument("--lanczos", type=str, default="slow")
@@ -81,5 +81,9 @@ def main():
         # delete model and hessian_computation_module
         del model
         del hessian_computation_module
+        del inputs
+        del targets
+        del eigenvalues
+        del weights
 if __name__ == "__main__":
     main()

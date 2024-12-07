@@ -3,15 +3,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class ConvNetwork(nn.Module):
-    def __init__(self):
+class ConvNetworkCIFAR10(nn.Module):
+    def __init__(self, input_channels=3, num_classes=10):
         super().__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.conv1 = nn.Conv2d(input_channels, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.fc3 = nn.Linear(84, num_classes)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))

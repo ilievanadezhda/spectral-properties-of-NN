@@ -14,7 +14,7 @@ import os
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path", type=str, default="experiments/01")
+    parser.add_argument("--path", type=str, default="experiments/test")
     parser.add_argument("--hessian_batch_size", type=int, default=60000)
     parser_args = parser.parse_args()
 
