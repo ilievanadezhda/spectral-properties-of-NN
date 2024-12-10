@@ -43,6 +43,30 @@ def prepare_data(args):
             root="data", train=False, download=True, transform=transform
         )
         print("Loaded CIFAR10 dataset.")
+    elif args.dataset == "CIFAR10_grayscale":
+        # transform CIFAR10 images to grayscale and resize to 28x28
+        transform = transforms.Compose(
+            [
+                transforms.Grayscale(num_output_channels=1),
+                transforms.Resize((28, 28)),
+                transforms.ToTensor(),
+            ]
+        )
+        train_data = datasets.CIFAR10(
+            root="data", train=True, download=True, transform=transform
+        )
+        test_data = datasets.CIFAR10(
+            root="data", train=False, download=True, transform=transform
+        )
+        print("Loaded CIFAR10 dataset with grayscale images.")
+    elif args.dataset == "FashionMNIST":
+        train_data = datasets.FashionMNIST(
+            root="data", train=True, download=True, transform=transforms.ToTensor()
+        )
+        test_data = datasets.FashionMNIST(
+            root="data", train=False, download=True, transform=transforms.ToTensor()
+        )
+        print("Loaded FashionMNIST dataset.")
     else:
         raise ValueError(f"Dataset {args.dataset} not supported")
 

@@ -1,0 +1,20 @@
+# dataset
+"dataset": "CIFAR10_grayscale"
+"batch_size": 64
+
+# model
+"model_name": "NeuralNetwork"
+"layer_sizes": [784, 16, 10]
+"activation": "Sigmoid"
+
+# optimizer
+"optim_name": "sgd"
+"optim_lr": 0.01
+"optim_momentum": 0.9
+
+# training
+"epochs": 30
+
+# Training Loss: 1.7793
+# Test Loss: 1.8097
+# Test Accuracy: 35.42%

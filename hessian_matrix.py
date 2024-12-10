@@ -38,7 +38,7 @@ def main():
     for checkpoint in os.listdir(f"{parser_args.path}/checkpoints"):
         # skip checkpoints
         if checkpoint not in ["model_untrained.pth", "model_trained.pth"]:
-            continue
+            continue     
         # create checkpoint directory
         checkpoint_dir = os.path.join(save_dir, checkpoint.split('.')[0])
         os.makedirs(checkpoint_dir, exist_ok=True)
