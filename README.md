@@ -1,4 +1,4 @@
-# Spectral Properties of Neural Network Architectures and Optimization
+# Spectral Properties of Neural Network Architectures and Optimization ✨
 
 This repository contains code for analyzing the eigenvalue spectrum of Hessians of neural network architectures using the Lanczos algorithm.
 
@@ -12,8 +12,9 @@ The codebase provides tools to:
 ## Key Files
 
 - `train.py`: Trains neural network models and saves checkpoints.
-- `spectrum.py`: Computes Hessian eigenvalues using Lanczos algorithm. 
+- `spectrum.py`: Computes Hessian eigenvalues using Lanczos algorithm.
 - `plot.py`: Creates visualizations of eigenvalue spectra.
+- `hessian_matrix.py`: Computes the Hessian matrix and its eigendecomposition for neural network models. 
 - `src/lanczos/`: Contains implementation of Lanczos algorithm for Hessian eigenvalue computation.
 - `src/models/`: Contains the neural network model architectures and configurations.
 - `src/utils/`: Contains utility functions for training, plotting etc.
