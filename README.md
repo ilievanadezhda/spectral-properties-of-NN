@@ -1,4 +1,4 @@
-# Spectral Properties of Neural Network Architectures and Optimization ✨
+# Spectral Properties of Neural Network Architectures and Optimization 🚀
 
 This repository contains code for analyzing the eigenvalue spectrum of Hessians of neural network architectures using the Lanczos algorithm.
 
