@@ -4,6 +4,6 @@ checkpoints/
 results/
 playground.ipynb
 groundtruth/
-report/
+report_experiments/
 results_nanogpt/
 spectrum_script.py
