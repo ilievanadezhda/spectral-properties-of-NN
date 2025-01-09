@@ -15,3 +15,6 @@
 # training
 "epochs": 15
 
+# Training Loss: 0.2021
+# Test Loss: 0.2049
+# Test Accuracy: 94.05%
